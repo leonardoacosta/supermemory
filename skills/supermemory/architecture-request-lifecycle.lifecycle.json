@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Request Lifecycle",
+    "subtitle": "Proposed request states; provider task status remains authoritative",
+    "output": "skills/supermemory/architecture-request-lifecycle.html",
+    "viewBox": [1440, 900],
+    "visual_preset": "editorial",
+    "quality_profile": "standard",
+    "views": [
+      { "id": "intake-review", "label": "Intake & review", "stateIds": ["captured", "clarify", "ownership", "validated", "decision"] },
+      { "id": "outcomes", "label": "Decision & outcomes", "stateIds": ["decision", "approved", "publish-gate", "published", "reconcile", "amended", "complete", "rejected", "withdrawn", "duplicate"] }
+    ],
+    "legend": {
+      "mode": "compact",
+      "entries": {
+        "start": { "label": "Request captured" },
+        "active": { "label": "Work / review" },
+        "waiting": { "label": "Awaiting input" },
+        "decision": { "label": "Human decision" },
+        "success": { "label": "Published / complete" },
+        "failure": { "label": "Rejected" },
+        "neutral": { "label": "Withdrawn / duplicate" },
+        "external": { "label": "External provider" }
+      }
+    }
+  },
+  "lanes": [
+    { "id": "request", "label": "Request & source" },
+    { "id": "review", "label": "Owner / reviewer" },
+    { "id": "publish", "label": "Human-controlled publication" },
+    { "id": "provider", "label": "External task provider" }
+  ],
+  "states": [
+    { "id": "captured", "type": "start", "label": "Request captured", "sublabel": "Retain original ask + conditions", "tag": "PROPOSED", "lane": "request", "col": 0 },
+    { "id": "clarify", "type": "waiting", "label": "Clarification needed", "sublabel": "Ask / constraints unresolved", "tag": "PROPOSED", "lane": "request", "col": 1 },
+    { "id": "ownership", "type": "waiting", "label": "Owner acceptance", "sublabel": "Owner: unknown until confirmed\nDeadline: unknown until supplied", "tag": "PROPOSED", "lane": "review", "col": 1 },
+    { "id": "validated", "type": "active", "label": "Owner validation", "sublabel": "Check intent, scope, evidence\nReadiness is not correctness", "tag": "PROPOSED", "lane": "review", "col": 2 },
+    { "id": "decision", "type": "decision", "label": "Human disposition", "sublabel": "Approve / reject / duplicate / withdraw", "tag": "PROPOSED", "lane": "review", "col": 3 },
+    { "id": "approved", "type": "waiting", "label": "Approved", "sublabel": "Approval recorded with source + time", "tag": "PROPOSED", "lane": "publish", "col": 3 },
+    { "id": "publish-gate", "type": "decision", "label": "Publication gate", "sublabel": "Explicit human approval required\nNo page/task write before this gate", "tag": "GATE", "lane": "publish", "col": 4 },
+    { "id": "published", "type": "success", "label": "Published", "sublabel": "Outcome + destination + source/time", "tag": "PROPOSED", "lane": "publish", "col": 4, "yOffset": -90 },
+    { "id": "reconcile", "type": "waiting", "label": "Reconcile outcome", "sublabel": "Write may have succeeded; verify externally", "tag": "PROPOSED", "lane": "publish", "col": 4, "yOffset": 95 },
+    { "id": "amended", "type": "active", "label": "Amended request", "sublabel": "Preserve prior ask; record amendment provenance", "tag": "PROPOSED", "lane": "request", "col": 2, "yOffset": 105 },
+    { "id": "complete", "type": "success", "label": "Completed", "sublabel": "Request closed; no implied task status", "tag": "PROPOSED", "lane": "request", "col": 4, "yOffset": 180 },
+    { "id": "rejected", "type": "failure", "label": "Rejected", "sublabel": "Reason + decision source/time", "tag": "PROPOSED", "lane": "request", "col": 4, "yOffset": 265 },
+    { "id": "withdrawn", "type": "neutral", "label": "Withdrawn", "sublabel": "Requester / authorized actor and time", "tag": "PROPOSED", "lane": "request", "col": 4, "yOffset": 350 },
+    { "id": "duplicate", "type": "neutral", "label": "Duplicate", "sublabel": "Link only when supported by evidence", "tag": "PROPOSED", "lane": "request", "col": 4, "yOffset": 435 },
+    { "id": "provider-status", "type": "external", "label": "Provider task status", "sublabel": "Read from provider; never infer or set here", "tag": "AUTHORITATIVE", "lane": "provider", "col": 4 }
+  ],
+  "transitions": [
+    { "from": "captured", "to": "clarify", "label": "information missing", "variant": "dashed" },
+    { "from": "captured", "to": "ownership", "label": "scope understood", "variant": "solid" },
+    { "from": "clarify", "to": "ownership", "label": "clarification recorded", "variant": "solid" },
+    { "from": "clarify", "to": "amended", "label": "ask changes", "variant": "dashed" },
+    { "from": "ownership", "to": "validated", "label": "owner accepts", "variant": "solid" },
+    { "from": "ownership", "to": "clarify", "label": "owner requests detail", "variant": "dashed" },
+    { "from": "validated", "to": "decision", "label": "evidence reviewed", "variant": "solid" },
+    { "from": "validated", "to": "amended", "label": "scope changes", "variant": "dashed" },
+    { "from": "decision", "to": "approved", "label": "human approves", "variant": "solid" },
+    { "from": "decision", "to": "rejected", "label": "human rejects", "variant": "dashed" },
+    { "from": "decision", "to": "duplicate", "label": "evidence supports duplicate", "variant": "dashed" },
+    { "from": "decision", "to": "withdrawn", "label": "withdrawal accepted", "variant": "dashed" },
+    { "from": "approved", "to": "publish-gate", "label": "explicit approval rechecked", "variant": "solid" },
+    { "from": "publish-gate", "to": "published", "label": "write confirmed", "note": "Only after human approval; record destination and evidence", "variant": "solid" },
+    { "from": "publish-gate", "to": "reconcile", "label": "write result uncertain", "note": "Do not retry blindly; inspect destination first", "variant": "dashed" },
+    { "from": "reconcile", "to": "published", "label": "destination confirms write", "variant": "solid" },
+    { "from": "reconcile", "to": "publish-gate", "label": "confirmed absent; approval still valid", "variant": "dashed" },
+    { "from": "published", "to": "amended", "label": "new request change", "variant": "dashed" },
+    { "from": "published", "to": "complete", "label": "requester / owner closes", "variant": "solid" },
+    { "from": "amended", "to": "clarify", "label": "reassess changed ask", "variant": "dashed" },
+    { "from": "provider-status", "to": "published", "label": "status observed only", "note": "Source/time provenance required; no status mutation", "variant": "dotted" }
+  ]
+}
