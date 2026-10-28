@@ -5,10 +5,10 @@ import { textContent, type ToolDeps } from "./types"
 
 export function register(deps: ToolDeps) {
 	deps.server.registerTool(
-		"whoAmI",
+		"who_am_i",
 		{
 			description:
-				"Get the current Supermemory account context, including user identity, role, access type, permissions, scope, and active space. Use this when the user asks who they are, what access they have, or which space is currently active. Use listSpaces instead when the user asks which spaces are available.",
+				"Get the current Supermemory account context, including user identity, role, access type, permissions, scope, and active space. Use this when the user asks who they are, what access they have, or which space is currently active. Use list_spaces instead when the user asks which spaces are available.",
 			inputSchema: z.object({}),
 			outputSchema: whoAmIOutputSchema,
 			annotations: READ_ONLY_TOOL_ANNOTATIONS,
@@ -20,7 +20,6 @@ export function register(deps: ToolDeps) {
 					deps.getActiveContainerTag(),
 				])
 				const client = deps.getClientInfo(context)
-				const sessionId = context.sessionId
 				const structuredContent: WhoAmIOutput = {
 					userId: session.user.id,
 					...(session.user.email ? { email: session.user.email } : {}),
@@ -34,7 +33,6 @@ export function register(deps: ToolDeps) {
 							: null,
 					...(session.scope ? { scope: session.scope } : {}),
 					...(client ? { client } : {}),
-					...(sessionId ? { sessionId } : {}),
 				}
 				return {
 					content: [textContent(JSON.stringify(structuredContent))],
